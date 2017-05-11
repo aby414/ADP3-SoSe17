@@ -15,17 +15,19 @@ checkHeight(H,L,R) -> H - maxHeight(L, R) == 1.
 
 insertBT(BT,Elem) ->
 	case is_number(Elem) of
-		true -> insert(BT,Elem), setHeight;
+		true -> Tree = insert(BT,Elem);
 		_Else -> BT
 	end.
 
-insert({},Elem) -> {Elem,maxHeight({},{})+1,{},{}};
+insert({},Elem) -> {Elem,0,{},{}};
 insert({W,H,L,R},Elem) -> 
 	if
-		Elem > W -> NewR = insert(R,Elem), {W,maxHeight(L, NewR)+1,L,NewR},setHeight;
-		Elem < W -> NewL = insert(L,Elem), {W,maxHeight(NewL, R)+1,NewL,R};
+		Elem > W -> NewR = insert(R,Elem), {W,getHeight(NewR)-getHeight(L),L,NewR},setHeight;
+		Elem < W -> NewL = insert(L,Elem), {W,getHeight(NewR)-getHeight(L),NewL,R};
 		true -> {W,H,L,R}
 	end.
+
+		
 %% Ermittelt die Hoehe eines Baums.
 getHeight({}) -> 0;
 getHeight({_W,H,_L,_R}) -> H.
