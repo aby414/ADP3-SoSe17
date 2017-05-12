@@ -3,16 +3,28 @@
 
 
 -module(avltree).
--export([initBT/0,insertBT/2]).
+-export([initBT/0,insertBT/2,deleteBT/2]).
 
 %% Ein leerer Baum wird erzeugt.
 initBT() -> {}.
 
+deleteBT({},Elem) -> {};
+deleteBT({W,H,{},{}},Elem) when W == Elem -> {};
+deleteBT({W,H,{},R},Elem) when W == Elem -> R;
+deleteBT({W,H,L,{}},Elem) when W == Elem -> L;
+deleteBT({W,H,L,R},Elem) ->
+	if
+		W == Elem -> Small = findSmallest(R),NewR = deleteBT(R,Small),
+					{Small,maxHeight(L, NewR)+1,L,NewR}; 
+		Elem < W -> NewL = deleteBT(L,Elem), {W,maxHeight(NewL,R)+1,NewL,R};
+		true -> NewR = deleteBT(R,Elem), {W,maxHeight(L, NewR)+1,L,NewR}
+	end.
+		
+findSmallest({W,H,{},{}}) -> W;
+findSmallest({W,H,L,R}) -> findSmallest(L).
 
-%% Ueberprueft, ob die Hoehe der Wurzel stimmt.
-checkHeight(H,L,R) -> H - maxHeight(L, R) == 1.	
 
-
+%----------------------------------------------------------------------------------
 insertBT(BT,Elem) ->
 	case is_number(Elem) of
 		true -> insert(BT,Elem);
