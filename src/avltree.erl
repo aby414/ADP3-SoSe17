@@ -3,25 +3,31 @@
 
 
 -module(avltree).
--export([initBT/0,insertBT/2,deleteBT/2]).
+-export([initBT/0,insertBT/2,deleteBT/2,isEmptyBT/1,equalBT/2, printBT/2]).
 
 %% Ein leerer Baum wird erzeugt.
 initBT() -> {}.
 
-deleteBT({},Elem) -> {};
-deleteBT({W,H,{},{}},Elem) when W == Elem -> {};
-deleteBT({W,H,{},R},Elem) when W == Elem -> R;
-deleteBT({W,H,L,{}},Elem) when W == Elem -> L;
-deleteBT({W,H,L,R},Elem) ->
+%----------------------------------------------------------------------------------
+
+deleteBT({},_Elem) -> {};
+deleteBT({W,_H,{},{}},Elem) when W == Elem -> {};
+deleteBT({W,_H,{},R},Elem) when W == Elem -> R;
+deleteBT({W,_H,L,{}},Elem) when W == Elem -> L;
+deleteBT({W,_H,L,R},Elem) ->
 	if
 		W == Elem -> Small = findSmallest(R),NewR = deleteBT(R,Small),
-					{Small,maxHeight(L, NewR)+1,L,NewR}; 
-		Elem < W -> NewL = deleteBT(L,Elem), {W,maxHeight(NewL,R)+1,NewL,R};
-		true -> NewR = deleteBT(R,Elem), {W,maxHeight(L, NewR)+1,L,NewR}
+					NewTree = {Small,maxHeight(L, NewR)+1,L,NewR},
+					 checkTree(NewTree); 
+		Elem < W -> NewL = deleteBT(L,Elem), NewTree = {W,maxHeight(NewL,R)+1,NewL,R},
+					checkTree(NewTree);
+		true -> NewR = deleteBT(R,Elem), NewTree = {W,maxHeight(L, NewR)+1,L,NewR},
+				checkTree(NewTree)
 	end.
 		
-findSmallest({W,H,{},{}}) -> W;
-findSmallest({W,H,L,R}) -> findSmallest(L).
+%% Findet den kleinsten Knoten im Baum
+findSmallest({W,_H,{},{}}) -> W;
+findSmallest({_W,_H,L,_R}) -> findSmallest(L).
 
 
 %----------------------------------------------------------------------------------
@@ -100,3 +106,34 @@ isEmptyBT(_) -> false.
 
 %% Testet auf strukturelle Gleichheit.
 equalBT(BT1,BT2) -> BT1 == BT2.
+
+%----------------------------------------------------------------------------------
+
+printBT(BT,Filename) -> util:logging(Filename, "digraph avltree{"),
+						util:logging(Filename, "\n"),
+						printTree(BT,Filename),
+						util:logging(Filename, "}").
+printTree({W,_H,{},{}},Filename) -> util:logging(Filename,integer_to_list(W)), util:logging(Filename, "\n");
+printTree({W,_H,L,{}},Filename) -> 
+	HeadL = integer_to_list(getValue(L)),
+	util:logging(Filename, integer_to_list(W) ++ " -> " ++ HeadL ++" [label = " ++ integer_to_list(getHeight(L)) ++ "]"),
+	util:logging(Filename, "\n"),
+	printTree(L, Filename);
+printTree({W,_H,{},R},Filename)-> 
+	HeadR = integer_to_list(getValue(R)),
+	util:logging(Filename, integer_to_list(W) ++ " -> " ++ HeadR ++" [label = " ++ integer_to_list(getHeight(R)) ++ "]"),
+	util:logging(Filename, "\n"),
+	printTree(R, Filename);
+printTree({W,_H,L,R},Filename) -> 
+	HeightL = integer_to_list(getHeight(L)),
+	HeightR = integer_to_list(getHeight(R)),
+	HeadL = integer_to_list(getValue(L)),
+	HeadR = integer_to_list(getValue(R)),
+	util:logging(Filename, integer_to_list(W) ++ " -> " ++ HeadL ++" [label = " ++ HeightL ++ "]"),
+	util:logging(Filename, "\n"),
+	printTree(L, Filename),
+	util:logging(Filename, integer_to_list(W) ++ " -> " ++ HeadR ++ " [label = " ++ HeightR ++ "]"),
+	util:logging(Filename, "\n"),
+	printTree(R, Filename).
+
+
